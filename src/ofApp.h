@@ -4,6 +4,7 @@
 #include "ofMain.h"
 #include "ofxSerial.h"
 #include "ofxQuadWarp.h"
+#include "ofxGui.h"
 
 
 class SerialMessage
@@ -63,8 +64,10 @@ public:
     ofFbo fbo;
     ofPoint points[10];
     
+    ofxPanel panel;
+    ofxIntSlider gridSize;
     
     int numMirrors = 16;
-    int gridSize = 4;
+    //int gridSize = 4;
 
 };

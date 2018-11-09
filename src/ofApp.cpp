@@ -56,6 +56,11 @@ void ofApp::setup()
     warper.setBottomRightCornerPosition(ofPoint(x + w, y + h)); // this is position of the quad warp corners, centering the image on the screen.
     warper.setup();
     warper.load(); // reload last saved changes.
+    
+    
+    panel.setup("", "settings.xml", 100, 500);
+    panel.add(gridSize.setup("Grid Size", 4, 1, 16));
+    panel.loadFromFile("settings.xml");
 }
 
 void ofApp::exit()
@@ -128,12 +133,12 @@ void ofApp::draw()
         
         for (int j = 0; j < gridSize; j++) {
             
-            float rate = ofGetElapsedTimef() / (((i * j / 2)) + 1) * 2;
+            float rate = ofGetElapsedTimef() / (((i * j / 2)) + 1) * 20;
             cout << rate << endl;
             
             ofSetColor(255, 255, 255, ofMap(sin(rate), -1, 1, 0, 255));
             
-            ofDrawRectangle(i * (width / 4), j * (height / 4), width / 4, height / 4);
+            ofDrawRectangle(i * (width / gridSize), j * (height / gridSize), width / gridSize, height / gridSize);
             
             
         }
@@ -186,6 +191,15 @@ void ofApp::draw()
     
     //======================== info.
     
+    if (showDebug) {
+        ofShowCursor();
+    } else {
+        ofHideCursor();
+    }
+    
+    if (showDebug) {
+        panel.draw();
+    }
     
     if (showDebug) {
         ofSetColor(ofColor::white);
