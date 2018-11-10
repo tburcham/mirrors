@@ -64,12 +64,13 @@ void ofApp::setup()
     
     panel.setup("", "settings.xml", 100, 500);
     panel.add(gridSize.setup("Grid Size", 4, 1, 16));
-    panel.add(lightPattern.setup("Light Pattern", 0, 0, 5));
-    panel.add(servoPattern.setup("Servo Pattern", 0, 0, 2));
+    panel.add(lightPattern.setup("Light Pattern", 0, 0, 7));
+    panel.add(servoPattern.setup("Servo Pattern", 0, 0, 6));
     panel.add(pace.setup("Pace", 10, 10, 180));
     panel.loadFromFile("settings.xml");
     
     lightPattern = 0;
+    servoPattern = 0;
 }
 
 void ofApp::exit()
@@ -137,28 +138,48 @@ void ofApp::update()
     
     
     //for (int i = 0; i < numMirrors; i++) {
-    if (servoPattern == 2) {
+    if (servoPattern == 1) {
         
         int pitch, yaw, pitch2, yaw2;
         
-        yaw = 0;
-        pitch = 0;
-        pitch2 = 0;
+        yaw = 180;
+        pitch = 45;
+        pitch2 = 45;
         yaw2 = 0;
         
-    } else if (servoPattern == 1 || servoPattern == 0) {
+        for (int i = 0; i < numMirrors; i++) {
+            
+            int mirrorNum = mirrors[i].mirrorNum;
+            
+            if (mirrorNum < 8) {
+                mirrors[i].yawPosition = yaw;
+                mirrors[i].pitchPosition = pitch;
+            } else {
+                mirrors[i].yawPosition = yaw2;
+                mirrors[i].pitchPosition = pitch2;
+            }
+            
+        }
+        
+    } else if (servoPattern == 0) {
         
         int pitch = sin(ofGetElapsedTimef()/2) * 90;
-        pitch = ofMap(pitch, -90, 90, 15, 90);
+        pitch = ofMap(pitch, -90, 90, 30, 60);
         
         int yaw = cos(ofGetElapsedTimef()/2) * 180;
-        yaw = ofMap(yaw, -180, 180, 0, 180);
+        yaw = ofMap(yaw, -180, 180, 120, 180);
         
         int pitch2 = sin(ofGetElapsedTimef()/4) * 90;
-        pitch2 = ofMap(pitch2, -90, 90, 15, 90);
+        pitch2 = ofMap(pitch2, -90, 90, 60, 30);
         
         int yaw2 = cos(ofGetElapsedTimef()/4) * 180;
-        yaw2 = ofMap(yaw2, -180, 180, 0, 180);
+        yaw2 = ofMap(yaw2, -180, 180, 120, 180);
+        
+        /*int pitch = 45;  //45   30 - 60
+        int pitch2 = 45; //45   30 - 60
+        
+        int yaw = 180;   //150  120 - 180
+        int yaw2 = 0;   //30    0 - 60*/
         
         
         // Debugging!!!
@@ -174,6 +195,213 @@ void ofApp::update()
             int mirrorNum = mirrors[i].mirrorNum;
             
             if (mirrorNum < 8) {
+                mirrors[i].yawPosition = yaw;
+                mirrors[i].pitchPosition = pitch;
+            } else {
+                mirrors[i].yawPosition = yaw2;
+                mirrors[i].pitchPosition = pitch2;
+            }
+            
+        }
+        
+        
+    } else if (servoPattern == 2) {
+        
+        int pitch = sin(ofGetElapsedTimef()/8) * 90;
+        pitch = ofMap(pitch, -90, 90, 15, 90);
+        
+        int yaw = cos(ofGetElapsedTimef()/8) * 180;
+        yaw = ofMap(yaw, -180, 180, 100, 180);
+        
+        int pitch2 = sin(ofGetElapsedTimef()/16) * 90;
+        pitch2 = ofMap(pitch2, -90, 90, 15, 90);
+        
+        int yaw2 = cos(ofGetElapsedTimef()/16) * 180;
+        yaw2 = ofMap(yaw2, -180, 180, 100, 180);
+        
+        for (int i = 0; i < numMirrors; i++) {
+            
+            int mirrorNum = mirrors[i].mirrorNum;
+            
+            if (mirrorNum < 8) {
+                mirrors[i].yawPosition = yaw;
+                mirrors[i].pitchPosition = pitch;
+            } else {
+                mirrors[i].yawPosition = yaw2;
+                mirrors[i].pitchPosition = pitch2;
+            }
+            
+        }
+        
+        
+    } else if (servoPattern == 3) {
+        
+        int pitch = sin(ofGetElapsedTimef()/2) * 90;
+        pitch = ofMap(pitch, -90, 90, 15, 90);
+        
+        int yaw = cos(ofGetElapsedTimef()/2) * 180;
+        yaw = ofMap(yaw, -180, 180, 100, 180);
+        
+        int pitch2 = sin(ofGetElapsedTimef()/2) * 90;
+        pitch2 = ofMap(pitch2, -90, 90, 15, 90);
+        
+        int yaw2 = cos(ofGetElapsedTimef()/2) * 180;
+        yaw2 = ofMap(yaw2, -180, 180, 180, 100);
+        
+        
+        // Debugging!!!
+        if (resetServoToZero) {
+            yaw = 0;
+            pitch = 0;
+            pitch2 = 0;
+            yaw2 = 0;
+        }
+        
+        for (int i = 0; i < numMirrors; i++) {
+            
+            int mirrorNum = mirrors[i].mirrorNum;
+            
+            if (mirrorNum < 8) {
+                mirrors[i].yawPosition = yaw;
+                mirrors[i].pitchPosition = pitch;
+            } else {
+                mirrors[i].yawPosition = yaw2;
+                mirrors[i].pitchPosition = pitch2;
+            }
+            
+        }
+        
+        
+    } else if (servoPattern == 4) {
+        
+        int pitch = sin(ofGetElapsedTimef()) * 90;
+        pitch = ofMap(pitch, -90, 90, 15, 75);
+        
+        /*int yaw = cos(ofGetElapsedTimef()/2) * 180;
+        yaw = ofMap(yaw, -180, 180, 0, 180);*/
+        
+        int yaw = 135;
+        
+        int pitch2 = sin(ofGetElapsedTimef()) * 90;
+        pitch2 = ofMap(pitch2, -90, 90, 15, 75);
+        
+        /*int yaw2 = cos(ofGetElapsedTimef()/2) * 180;
+        yaw2 = ofMap(yaw2, -180, 180, 180, 0);*/
+         
+        int yaw2 = 45;
+        
+        
+        // Debugging!!!
+        if (resetServoToZero) {
+            yaw = 0;
+            pitch = 0;
+            pitch2 = 0;
+            yaw2 = 0;
+        }
+        
+        for (int i = 0; i < numMirrors; i++) {
+            
+            int mirrorNum = mirrors[i].mirrorNum;
+            
+            if (mirrorNum < 8) {
+                mirrors[i].yawPosition = yaw;
+                mirrors[i].pitchPosition = pitch;
+            } else {
+                mirrors[i].yawPosition = yaw2;
+                mirrors[i].pitchPosition = pitch2;
+            }
+            
+        }
+        
+        
+    } else if (servoPattern == 5) {
+        
+        int pitch = sin(ofGetElapsedTimef()/4) * 90;
+        pitch = ofMap(pitch, -90, 90, 15, 75);
+        
+        int yaw = cos(ofGetElapsedTimef()/4) * 180;
+         yaw = ofMap(yaw, -180, 180, 125, 145);
+        
+        //int yaw = 135;
+        
+        int pitch2 = sin(ofGetElapsedTimef()/4) * 90;
+        pitch2 = ofMap(pitch2, -90, 90, 15, 75);
+        
+        int yaw2 = cos(ofGetElapsedTimef()/4) * 180;
+         yaw2 = ofMap(yaw2, -180, 180, 145, 125);
+        
+        //int yaw2 = 45;
+        
+        
+        // Debugging!!!
+        if (resetServoToZero) {
+            yaw = 0;
+            pitch = 0;
+            pitch2 = 0;
+            yaw2 = 0;
+        }
+        
+        for (int i = 0; i < numMirrors; i++) {
+            
+            int mirrorNum = mirrors[i].mirrorNum;
+            
+            if (mirrorNum < 8) {
+                mirrors[i].yawPosition = yaw;
+                mirrors[i].pitchPosition = pitch;
+            } else {
+                mirrors[i].yawPosition = yaw2;
+                mirrors[i].pitchPosition = pitch2;
+            }
+            
+        }
+        
+        
+    } else if (servoPattern == 6) {
+        
+        /*int pitch3 = sin(ofGetElapsedTimef()*4) * 90;
+        pitch3 = ofMap(pitch3, -90, 90, 0, 90);
+        
+        int yaw3 = cos(ofGetElapsedTimef()*4) * 180;
+        yaw3 = ofMap(yaw3, -180, 180, 0, 180);*/
+        
+        
+        int pitch3 = ofRandom(90);
+        int yaw3 = ofRandom(180);
+        
+        //int yaw = 135;
+        
+        /*int pitch2 = sin(ofGetElapsedTimef()/4) * 90;
+        pitch2 = ofMap(pitch2, -90, 90, 15, 75);
+        
+        int yaw2 = cos(ofGetElapsedTimef()/4) * 180;
+        yaw2 = ofMap(yaw2, -180, 180, 145, 125);*/
+        
+        //int yaw2 = 45;
+        
+        int yaw, pitch, yaw2, pitch2;
+        
+        yaw = 180;
+        pitch = 45;
+        pitch2 = 45;
+        yaw2 = 0;
+        
+        
+        // Debugging!!!
+        if (resetServoToZero) {
+            yaw = 0;
+            pitch = 0;
+            pitch2 = 0;
+            yaw2 = 0;
+        }
+        
+        for (int i = 0; i < numMirrors; i++) {
+            
+            int mirrorNum = mirrors[i].mirrorNum;
+            
+            if (mirrorNum == 8) {
+                mirrors[i].yawPosition = yaw3;
+                mirrors[i].pitchPosition = pitch3;
+            } else if (mirrorNum < 8) {
                 mirrors[i].yawPosition = yaw;
                 mirrors[i].pitchPosition = pitch;
             } else {
@@ -320,16 +548,23 @@ void ofApp::draw()
         
         ofSetColor(255, 255, 255);
         
-        int x, y, w, h;
+        int w, h;
         
         w = width;
         h = height;
-        x = w / 2;
-        y = h / 2;
+        //x = w / 2;
+        //y = h / 2;
         
-        int radius = ofMap(sin(ofGetElapsedTimef() * 3), -1, 1, 0.1, w/1.5);
+        for (int i = 0; i < 8; i++) {
         
-        circleStroke(x, y, radius, 20);
+            int radius = ofMap(sin(ofGetElapsedTimef() * 3 + i), -1, 1, 0.1, w/1.5);
+            
+            int x = ofMap(sin(ofGetElapsedTimef() / 3 + i), -1, 1, 0, width);
+            int y = ofMap(cos(ofGetElapsedTimef() / 3 + i), -1, 1, 0, height);
+            
+            circleStroke(x, y, radius, 50);
+            
+        }
         
     } else if (lightPattern == 4) {
         
@@ -351,9 +586,12 @@ void ofApp::draw()
             y = mirrors[i].y * h;
             
             
-            int radius = ofMap(sin(ofGetElapsedTimef() / 2 + i), -1, 1, 0.1, w/2);
+            int _w = ofMap(sin(ofGetElapsedTimef() / 2 + i), -1, 1, 0.1, w);
+            int _h = ofMap(cos(ofGetElapsedTimef() / 2 + i), -1, 1, 0.1, h);
             
-            circleStroke(x + w/2, y + h/2, radius, radius);
+            //circleStroke(x + w/2, y + h/2, radius, radius);
+            
+            ofDrawRectangle(x, y, _w, _h);
             
             
         }
@@ -385,6 +623,28 @@ void ofApp::draw()
             } else {
                 //circleStroke(x + w/2, y + h/2, 5, 1);
             }
+            
+            
+        }
+        
+    } else if (lightPattern == 6) {
+        
+        for (int i = 0; i < numMirrors; i++) {
+            
+            int rate = ofMap(sin(ofGetElapsedTimef() / 10), -1, 1, 127, 255);
+            
+            ofSetColor(255, 255, 255, rate);
+            //ofDrawRectangle(
+            //ofDrawRectangle(i * (width / gridSize), i * (height / gridSize), width / gridSize, height / gridSize);
+            
+            int x, y, w, h;
+            
+            w = width / gridSize;
+            h = height / gridSize;
+            x = mirrors[i].x * w;
+            y = mirrors[i].y * h;
+            
+            ofDrawRectangle(x, y, w, h);
             
             
         }
