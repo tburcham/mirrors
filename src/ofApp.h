@@ -5,6 +5,7 @@
 #include "ofxSerial.h"
 #include "ofxQuadWarp.h"
 #include "ofxGui.h"
+#include "mirror.h"
 
 
 class SerialMessage
@@ -66,8 +67,21 @@ public:
     
     ofxPanel panel;
     ofxIntSlider gridSize;
+    ofxIntSlider lightPattern;
+    ofxIntSlider servoPattern;
+    ofxIntSlider pace;
     
     int numMirrors = 16;
     //int gridSize = 4;
+    
+    vector<int> servos;
+    
+    //vector<Mirror> mirrors;
+    Mirror mirrors[16];
+    
+    void circleStroke( int x, int y, int rad, int stroke );
+    
+    //int lightPattern = 0;
+    //int servoPattern = 0;
 
 };

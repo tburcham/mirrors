@@ -4,6 +4,9 @@
 void ofApp::setup()
 {
 
+    
+    servos.resize(numMirrors * 2);
+    
     ofEnableAlphaBlending();
     ofSeedRandom(1000);
 
@@ -56,11 +59,17 @@ void ofApp::setup()
     warper.setBottomRightCornerPosition(ofPoint(x + w, y + h)); // this is position of the quad warp corners, centering the image on the screen.
     warper.setup();
     warper.load(); // reload last saved changes.
+    warper.toggleShow();
     
     
     panel.setup("", "settings.xml", 100, 500);
     panel.add(gridSize.setup("Grid Size", 4, 1, 16));
+    panel.add(lightPattern.setup("Light Pattern", 0, 0, 5));
+    panel.add(servoPattern.setup("Servo Pattern", 0, 0, 2));
+    panel.add(pace.setup("Pace", 10, 10, 180));
     panel.loadFromFile("settings.xml");
+    
+    lightPattern = 0;
 }
 
 void ofApp::exit()
@@ -72,35 +81,131 @@ void ofApp::exit()
 
 void ofApp::update()
 {
+    
+    // Change ptterns based on time
+    
+    float time = ofGetElapsedTimef();
+    //cout << "time:" << time << " pace:" << pace << endl;
+    
+    float p = pace * (lightPattern.getMax() + 1);
+    float timemod = fmodf(time, p);
+    float pattern = floor(timemod / pace);
+    lightPattern = pattern;
+    
+    //
+    
+    float s = pace * (servoPattern.getMax() + 1);
+    float stimemod = fmodf(time, s);
+    float spattern = floor(stimemod / pace);
+    servoPattern = spattern;
+    
     // Create a byte buffer.
     //ofx::IO::ByteBuffer buffer("Frame Number: " + ofToString(ofGetFrameNum()));
     
-    int pitch = sin(ofGetElapsedTimef()/2) * 90;
-    pitch = ofMap(pitch, -90, 90, 0, 90);
     
-    int yaw = cos(ofGetElapsedTimef()/2) * 180;
-    yaw = ofMap(yaw, -180, 180, 0, 180);
-    
-    int pitch2 = sin(ofGetElapsedTimef()/4) * 90;
-    pitch2 = ofMap(pitch2, -90, 90, 0, 90);
-    
-    int yaw2 = cos(ofGetElapsedTimef()/4) * 180;
-    yaw2 = ofMap(yaw2, -180, 180, 0, 180);
+
+    //ofx::IO::ByteBuffer buffer("0;" + ofToString(pitch) + ":" + ofToString(pitch));
+    //ofx::IO::ByteBuffer buffer("0:" + ofToString(yaw) + "&1:" + ofToString(pitch));
     
     
-    // Debugging!!!
-    if (resetServoToZero) {
+    
+    //for (int i = 0; i < mirrors.size(); i++) {
+    
+    // Map mirror positions and servo numbers
+    mirrors[0].setup( 10, 20, 21, 0, 0);
+    mirrors[1].setup( 8,  16, 17, 1, 0);
+    mirrors[2].setup( 0,  0,  1,  2, 0);
+    mirrors[3].setup( 2,  4,  5,  3, 0);
+    
+    mirrors[4].setup( 11, 22, 23, 0, 1);
+    mirrors[5].setup( 9,  18, 19, 1, 1);
+    mirrors[6].setup( 1,  2,  3,  2, 1);
+    mirrors[7].setup( 3,  6,  7,  3, 1);
+    
+    mirrors[8].setup( 14, 28, 29, 0, 2);
+    mirrors[9].setup( 12, 24, 25, 1, 2);
+    mirrors[10].setup(4,  8,  9,  2, 2);
+    mirrors[11].setup(6,  12, 13, 3, 2);
+    
+    mirrors[12].setup(15, 30, 31, 0, 3);
+    mirrors[13].setup(13, 26, 27, 1, 3);
+    mirrors[14].setup(5,  10, 11, 2, 3);
+    mirrors[15].setup(7,  14, 15,  3, 3);
+        
+    //}
+    
+    
+    
+    //for (int i = 0; i < numMirrors; i++) {
+    if (servoPattern == 2) {
+        
+        int pitch, yaw, pitch2, yaw2;
+        
         yaw = 0;
         pitch = 0;
         pitch2 = 0;
         yaw2 = 0;
+        
+    } else if (servoPattern == 1 || servoPattern == 0) {
+        
+        int pitch = sin(ofGetElapsedTimef()/2) * 90;
+        pitch = ofMap(pitch, -90, 90, 15, 90);
+        
+        int yaw = cos(ofGetElapsedTimef()/2) * 180;
+        yaw = ofMap(yaw, -180, 180, 0, 180);
+        
+        int pitch2 = sin(ofGetElapsedTimef()/4) * 90;
+        pitch2 = ofMap(pitch2, -90, 90, 15, 90);
+        
+        int yaw2 = cos(ofGetElapsedTimef()/4) * 180;
+        yaw2 = ofMap(yaw2, -180, 180, 0, 180);
+        
+        
+        // Debugging!!!
+        if (resetServoToZero) {
+            yaw = 0;
+            pitch = 0;
+            pitch2 = 0;
+            yaw2 = 0;
+        }
+        
+        for (int i = 0; i < numMirrors; i++) {
+            
+            int mirrorNum = mirrors[i].mirrorNum;
+            
+            if (mirrorNum < 8) {
+                mirrors[i].yawPosition = yaw;
+                mirrors[i].pitchPosition = pitch;
+            } else {
+                mirrors[i].yawPosition = yaw2;
+                mirrors[i].pitchPosition = pitch2;
+            }
+            
+        }
+        
+        
     }
-
-    //ofx::IO::ByteBuffer buffer("0;" + ofToString(pitch) + ":" + ofToString(pitch));
     
-    //ofx::IO::ByteBuffer buffer("0:" + ofToString(yaw) + "&1:" + ofToString(pitch));
     
-    ofx::IO::ByteBuffer buffer("0:" + ofToString(yaw) + "&1:" + ofToString(pitch) + "&2:" + ofToString(yaw2) + "&3:" + ofToString(pitch2) + "&4:" + ofToString(yaw) + "&5:" + ofToString(pitch) + "&6:" + ofToString(yaw2) + "&7:" + ofToString(pitch2) + "&8:" + ofToString(yaw) + "&9:" + ofToString(pitch) + "&10:" + ofToString(yaw2) + "&11:" + ofToString(pitch2) + "&12:" + ofToString(yaw) + "&13:" + ofToString(pitch) + "&14:" + ofToString(yaw2) + "&15:" + ofToString(pitch2) + "&16:" + ofToString(yaw) + "&17:" + ofToString(pitch) + "&18:" + ofToString(yaw2) + "&19:" + ofToString(pitch2) + "&20:" + ofToString(yaw) + "&21:" + ofToString(pitch) + "&22:" + ofToString(yaw2) + "&23:" + ofToString(pitch2) + "&24:" + ofToString(yaw) + "&25:" + ofToString(pitch) + "&26:" + ofToString(yaw2) + "&27:" + ofToString(pitch2) + "&28:" + ofToString(yaw) + "&29:" + ofToString(pitch) + "&30:" + ofToString(yaw2) + "&31:" + ofToString(pitch2));
+    
+    /* Send to Arduino over Serial! */
+    
+    string bufferStr;
+    
+    for (int i = 0; i < numMirrors; i++) {
+        
+        if (i > 0) {
+            bufferStr += "&";
+        }
+        bufferStr += ofToString(mirrors[i].yawServo) + ":" + ofToString(mirrors[i].yawPosition) + "&" + ofToString(mirrors[i].pitchServo) + ":" + ofToString(mirrors[i].pitchPosition);
+        
+    }
+    
+    //cout << bufferStr << endl;
+    
+    ofx::IO::ByteBuffer buffer(bufferStr);
+    
+    /*ofx::IO::ByteBuffer buffer("0:" + ofToString(yaw) + "&1:" + ofToString(pitch) + "&2:" + ofToString(yaw2) + "&3:" + ofToString(pitch2) + "&4:" + ofToString(yaw) + "&5:" + ofToString(pitch) + "&6:" + ofToString(yaw2) + "&7:" + ofToString(pitch2) + "&8:" + ofToString(yaw) + "&9:" + ofToString(pitch) + "&10:" + ofToString(yaw2) + "&11:" + ofToString(pitch2) + "&12:" + ofToString(yaw) + "&13:" + ofToString(pitch) + "&14:" + ofToString(yaw2) + "&15:" + ofToString(pitch2) + "&16:" + ofToString(yaw) + "&17:" + ofToString(pitch) + "&18:" + ofToString(yaw2) + "&19:" + ofToString(pitch2) + "&20:" + ofToString(yaw) + "&21:" + ofToString(pitch) + "&22:" + ofToString(yaw2) + "&23:" + ofToString(pitch2) + "&24:" + ofToString(yaw) + "&25:" + ofToString(pitch) + "&26:" + ofToString(yaw2) + "&27:" + ofToString(pitch2) + "&28:" + ofToString(yaw) + "&29:" + ofToString(pitch) + "&30:" + ofToString(yaw2) + "&31:" + ofToString(pitch2));*/
 
     // Send the byte buffer.
     // ofx::IO::PacketSerialDevice will encode the buffer, send it to the
@@ -129,21 +234,178 @@ void ofApp::draw()
     
     ofBackground(0);
     
-    for (int i = 0; i < gridSize; i++) {
+    if (lightPattern == 0) {
+    
+        for (int i = 0; i < numMirrors; i++) {
+            
+            int rate = ofMap(mirrors[i].yawPosition, 0, 180, 0, 255);
+            /*if (i % 2 == 0) {
+                rate = ofMap(rate, 0, 180, 0, 255);
+            } else {
+                rate = ofMap(rate, 0, 90, 0, 255);
+            }*/
+            
+            ofSetColor(255, 255, 255, rate);
+            //ofDrawRectangle(
+            //ofDrawRectangle(i * (width / gridSize), i * (height / gridSize), width / gridSize, height / gridSize);
+            
+            int x, y, w, h;
+            
+            w = width / gridSize;
+            h = height / gridSize;
+            x = mirrors[i].x * w;
+            y = mirrors[i].y * h;
+            
+            //cout << mirrors[i].mirrorNum << ":" << i << ":" << x << "," << y << "yp:" << mirrors[i].yawPosition << endl;
+            
+            ofDrawRectangle(x, y, w, h);
+            
+            
+        }
         
-        for (int j = 0; j < gridSize; j++) {
+    } else if (lightPattern == 1) {
+        
+        for (int i = 0; i < numMirrors; i++) {
             
-            float rate = ofGetElapsedTimef() / (((i * j / 2)) + 1) * 20;
-            cout << rate << endl;
+            ofSetColor(255, 255, 255);
             
-            ofSetColor(255, 255, 255, ofMap(sin(rate), -1, 1, 0, 255));
+            int x, y, w, h;
             
-            ofDrawRectangle(i * (width / gridSize), j * (height / gridSize), width / gridSize, height / gridSize);
+            w = width / gridSize;
+            h = height / gridSize;
+            x = mirrors[i].x * w;
+            y = mirrors[i].y * h;
+            
+            
+            int radius = ofMap(sin(ofGetElapsedTimef() * 2 + i), -1, 1, 0.1, w/2);
+            
+            //cout << mirrors[i].mirrorNum << ":" << i << ":" << x << "," << y << "yp:" << mirrors[i].yawPosition << endl;
+            
+            //ofSetCircleResolution(100);
+            //ofDrawCircle(x + w/2, y + h/2, radius);
+            
+            circleStroke(x + w/2, y + h/2, radius, radius);
+            
+            
+        }
+        
+    } else if (lightPattern == 2) {
+        
+        for (int i = 0; i < numMirrors; i++) {
+            
+            ofSetColor(255, 255, 255);
+            
+            int x, y, w, h;
+            
+            w = width / gridSize;
+            h = height / gridSize;
+            x = mirrors[i].x * w;
+            y = mirrors[i].y * h;
+            
+            
+            int radius = ofMap(sin(ofGetElapsedTimef() * 2 + i), -1, 1, 0.1, w/2);
+            
+            //cout << mirrors[i].mirrorNum << ":" << i << ":" << x << "," << y << "yp:" << mirrors[i].yawPosition << endl;
+            
+            /*ofSetCircleResolution(100);
+            ofNoFill();
+            ofSetLineWidth(10);
+            ofDrawCircle(x + w/2, y + h/2, radius);*/
+            
+            circleStroke(x + w/2, y + h/2, radius, 10);
+            
+        }
+        
+    } else if (lightPattern == 3) {
+        
+        ofSetColor(255, 255, 255);
+        
+        int x, y, w, h;
+        
+        w = width;
+        h = height;
+        x = w / 2;
+        y = h / 2;
+        
+        int radius = ofMap(sin(ofGetElapsedTimef() * 3), -1, 1, 0.1, w/1.5);
+        
+        circleStroke(x, y, radius, 20);
+        
+    } else if (lightPattern == 4) {
+        
+        for (int i = 0; i < numMirrors; i++) {
+            
+            if (i % 3 == 0) {
+                ofSetColor(255, 0, 0);
+            } else if (i % 3 == 1) {
+                ofSetColor(0, 255, 0);
+            } else if (i % 3 == 2) {
+                ofSetColor(0, 0, 255);
+            }
+            
+            int x, y, w, h;
+            
+            w = width / gridSize;
+            h = height / gridSize;
+            x = mirrors[i].x * w;
+            y = mirrors[i].y * h;
+            
+            
+            int radius = ofMap(sin(ofGetElapsedTimef() / 2 + i), -1, 1, 0.1, w/2);
+            
+            circleStroke(x + w/2, y + h/2, radius, radius);
+            
+            
+        }
+        
+    } else if (lightPattern == 5) {
+        
+        for (int i = 0; i < numMirrors; i++) {
+            
+            if (i % 3 == 0) {
+                ofSetColor(255, 0, 0);
+            } else if (i % 3 == 1) {
+                ofSetColor(0, 255, 0);
+            } else if (i % 3 == 2) {
+                ofSetColor(0, 0, 255);
+            }
+            
+            int x, y, w, h;
+            
+            w = width / gridSize;
+            h = height / gridSize;
+            x = mirrors[i].x * w;
+            y = mirrors[i].y * h;
+            
+            
+            int radius = ofMap(sin((ofGetElapsedTimef() / 4) + ofRandom(i)), -1, 1, 0.1, w/2);
+            
+            if (radius == w/2 - 1) {
+                circleStroke(x + w/2, y + h/2, radius, radius);
+            } else {
+                //circleStroke(x + w/2, y + h/2, 5, 1);
+            }
             
             
         }
         
     }
+    
+    /*for (int i = 0; i < gridSize; i++) {
+        
+        for (int j = 0; j < gridSize; j++) {
+            
+            float rate = ofGetElapsedTimef() / (((i * j / 2)) + 1) * 2;
+            cout << rate << endl;
+            
+            ofSetColor(255, 255, 255, ofMap(sin(rate), -1, 1, 0, 255));
+            
+            //float rate =
+            
+            ofDrawRectangle(i * (width / gridSize), j * (height / gridSize), width / gridSize, height / gridSize);
+            
+        }
+    }*/
     
     fbo.end();
     
@@ -253,6 +515,28 @@ void ofApp::draw()
         }
     }
 }
+
+void ofApp::circleStroke( int x, int y, int rad, int stroke ){
+    ofBeginShape();
+    int resolution = 100;
+    float angle = 0;
+    
+    for( int i=0; i<resolution; i++ ){
+        angle = i*2*PI/resolution;
+        ofVertex(x + rad*sin(angle), y + rad*cos(angle));
+    }
+    
+    ofNextContour(true);
+    int rad2 = rad - stroke;
+    
+    for( int i=0; i<resolution; i++ ){
+        angle = i*2*PI/resolution;
+        ofVertex(x + rad2*sin(angle), y + rad2*cos(angle));
+    }
+    
+    ofEndShape(true);
+}
+
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
