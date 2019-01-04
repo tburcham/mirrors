@@ -70,14 +70,15 @@ public:
     ofxIntSlider lightPattern;
     ofxIntSlider servoPattern;
     ofxIntSlider pace;
+    ofxToggle useSchedule;
     
     int numMirrors = 16;
     //int gridSize = 4;
     
     vector<int> servos;
     
-    //vector<Mirror> mirrors;
-    Mirror mirrors[16];
+    vector<Mirror> mirrors;
+    //Mirror mirrors[2];
     
     void circleStroke( int x, int y, int rad, int stroke );
     

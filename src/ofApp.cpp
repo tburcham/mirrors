@@ -7,6 +7,10 @@ void ofApp::setup()
     
     servos.resize(numMirrors * 2);
     
+    cout << numMirrors << endl;
+    
+    mirrors.resize(numMirrors);
+    
     ofEnableAlphaBlending();
     ofSeedRandom(1000);
 
@@ -63,14 +67,15 @@ void ofApp::setup()
     
     
     panel.setup("", "settings.xml", 100, 500);
+    panel.add(useSchedule.setup("Use Schedule?", false));
     panel.add(gridSize.setup("Grid Size", 4, 1, 16));
     panel.add(lightPattern.setup("Light Pattern", 0, 0, 7));
-    panel.add(servoPattern.setup("Servo Pattern", 0, 0, 6));
+    panel.add(servoPattern.setup("Servo Pattern", 0, 0, 7));
     panel.add(pace.setup("Pace", 10, 10, 180));
     panel.loadFromFile("settings.xml");
     
     lightPattern = 0;
-    servoPattern = 0;
+    servoPattern = 7;
 }
 
 void ofApp::exit()
@@ -83,22 +88,25 @@ void ofApp::exit()
 void ofApp::update()
 {
     
-    // Change ptterns based on time
-    
-    float time = ofGetElapsedTimef();
-    //cout << "time:" << time << " pace:" << pace << endl;
-    
-    float p = pace * (lightPattern.getMax() + 1);
-    float timemod = fmodf(time, p);
-    float pattern = floor(timemod / pace);
-    lightPattern = pattern;
-    
-    //
-    
-    float s = pace * (servoPattern.getMax() + 1);
-    float stimemod = fmodf(time, s);
-    float spattern = floor(stimemod / pace);
-    servoPattern = spattern;
+    if (useSchedule) {
+        // Change ptterns based on time
+        
+        float time = ofGetElapsedTimef();
+        //cout << "time:" << time << " pace:" << pace << endl;
+        
+        float p = pace * (lightPattern.getMax() + 1);
+        float timemod = fmodf(time, p);
+        float pattern = floor(timemod / pace);
+        lightPattern = pattern;
+        
+        //
+        
+        float s = pace * (servoPattern.getMax() + 1);
+        float stimemod = fmodf(time, s);
+        float spattern = floor(stimemod / pace);
+        servoPattern = spattern;
+        
+    }
     
     // Create a byte buffer.
     //ofx::IO::ByteBuffer buffer("Frame Number: " + ofToString(ofGetFrameNum()));
@@ -111,6 +119,8 @@ void ofApp::update()
     
     
     //for (int i = 0; i < mirrors.size(); i++) {
+    
+    cout << "Mirrors:" << mirrors.size() << endl;
     
     // Map mirror positions and servo numbers
     mirrors[0].setup( 10, 20, 21, 0, 0);
@@ -159,6 +169,8 @@ void ofApp::update()
                 mirrors[i].pitchPosition = pitch2;
             }
             
+            cout << "Mirror " << i << ":" << yaw << "," << pitch << "," << endl;
+            
         }
         
     } else if (servoPattern == 0) {
@@ -202,7 +214,11 @@ void ofApp::update()
                 mirrors[i].pitchPosition = pitch2;
             }
             
+            cout << "Mirror " << i << ":" << yaw << "," << pitch << "," << endl;
+            
         }
+        
+        
         
         
     } else if (servoPattern == 2) {
@@ -412,6 +428,48 @@ void ofApp::update()
         }
         
         
+    } else if (servoPattern == 7) {
+        
+        int pitch = sin(ofGetElapsedTimef()/4) * 90;
+        pitch = ofMap(pitch, -90, 90, 0, 90);
+        
+        int yaw = cos(ofGetElapsedTimef()/4) * 180;
+        yaw = ofMap(yaw, -180, 180, 0, 180);
+        
+        //int yaw = 135;
+        
+        int pitch2 = sin(ofGetElapsedTimef()/4) * 90;
+        pitch2 = ofMap(pitch2, -90, 90, 0, 90);
+        
+        int yaw2 = cos(ofGetElapsedTimef()/4) * 180;
+        yaw2 = ofMap(yaw2, -180, 180, 0, 180);
+        
+        //int yaw2 = 45;
+        
+        
+        // Debugging!!!
+        if (resetServoToZero) {
+            yaw = 90;
+            pitch = 0;
+            pitch2 = 0;
+            yaw2 = 90;
+        }
+        
+        for (int i = 0; i < numMirrors; i++) {
+            
+            int mirrorNum = mirrors[i].mirrorNum;
+            
+            if (mirrorNum < 8) {
+                mirrors[i].yawPosition = yaw;
+                mirrors[i].pitchPosition = pitch;
+            } else {
+                mirrors[i].yawPosition = yaw2;
+                mirrors[i].pitchPosition = pitch2;
+            }
+            
+        }
+        
+        
     }
     
     
@@ -419,6 +477,8 @@ void ofApp::update()
     /* Send to Arduino over Serial! */
     
     string bufferStr;
+    
+    cout << "Num Mirrors " << numMirrors << endl;
     
     for (int i = 0; i < numMirrors; i++) {
         
@@ -438,7 +498,11 @@ void ofApp::update()
     // Send the byte buffer.
     // ofx::IO::PacketSerialDevice will encode the buffer, send it to the
     // receiver, and send a packet marker.
+    
+    cout << buffer << endl;
     device.send(buffer);
+    
+    
     
     for(int i=0; i<10; i++) {
         // randomise points over the image area.
@@ -646,6 +710,39 @@ void ofApp::draw()
             
             ofDrawRectangle(x, y, w, h);
             
+            
+        }
+        
+    }  else if (lightPattern == 7) {
+        
+        for (int i = 0; i < numMirrors; i++) {
+            
+            int rate = ofMap(sin(ofGetElapsedTimef() / 20), -1, 1, 127, 255);
+            
+            ofSetColor(255, 255, 255, rate);
+            //ofDrawRectangle(
+            //ofDrawRectangle(i * (width / gridSize), i * (height / gridSize), width / gridSize, height / gridSize);
+            
+            int x, y, w, h;
+            
+            w = width / gridSize;
+            h = height / gridSize;
+            x = mirrors[i].x * w;
+            y = mirrors[i].y * h;
+            
+            //ofDrawRectangle(x, y, w / 2, h / 2);
+            
+            int radius = ofMap(sin(ofGetElapsedTimef() / 3 + i), -1, 1, 0.1, w/1.5);
+            int res = ofMap(cos(ofGetElapsedTimef() / 4 + i), -1, 1, 2, 25);
+            
+            //ofSetSphereResolution(res);
+            
+            //ofDrawSphere(x, y, radius);
+            
+            ofSpherePrimitive sphere;
+            sphere.set(radius,res);
+            sphere.setPosition(x,y,0);
+            sphere.drawWireframe();
             
         }
         
