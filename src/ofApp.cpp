@@ -3,7 +3,7 @@
 
 void ofApp::setup()
 {
-
+    
     
     servos.resize(numMirrors * 2);
     
@@ -13,21 +13,21 @@ void ofApp::setup()
     
     ofEnableAlphaBlending();
     ofSeedRandom(1000);
-
+    
     std::vector<ofx::IO::SerialDeviceInfo> devicesInfo = ofx::IO::SerialDeviceUtils::listDevices();
-
+    
     ofLogNotice("ofApp::setup") << "Connected Devices: ";
-
+    
     for (std::size_t i = 0; i < devicesInfo.size(); ++i)
     {
         ofLogNotice("ofApp::setup") << "\t" << devicesInfo[i];
     }
-
+    
     if (!devicesInfo.empty())
     {
         // Connect to the first matching device.
         bool success = device.setup(devicesInfo[0], 115200);
-
+        
         if(success)
         {
             device.registerAllEvents(this);
@@ -72,10 +72,11 @@ void ofApp::setup()
     panel.add(lightPattern.setup("Light Pattern", 0, 0, 7));
     panel.add(servoPattern.setup("Servo Pattern", 0, 0, 7));
     panel.add(pace.setup("Pace", 10, 10, 180));
+    panel.add(specificMirror.setup("Specific Mirror", 0, 0, 15));
     panel.loadFromFile("settings.xml");
     
     lightPattern = 0;
-    servoPattern = 7;
+    servoPattern = 0;
 }
 
 void ofApp::exit()
@@ -112,7 +113,7 @@ void ofApp::update()
     //ofx::IO::ByteBuffer buffer("Frame Number: " + ofToString(ofGetFrameNum()));
     
     
-
+    
     //ofx::IO::ByteBuffer buffer("0;" + ofToString(pitch) + ":" + ofToString(pitch));
     //ofx::IO::ByteBuffer buffer("0:" + ofToString(yaw) + "&1:" + ofToString(pitch));
     
@@ -142,38 +143,41 @@ void ofApp::update()
     mirrors[13].setup(13, 26, 27, 1, 3);
     mirrors[14].setup(5,  10, 11, 2, 3);
     mirrors[15].setup(7,  14, 15,  3, 3);
-        
+    
     //}
     
     
     
-    //for (int i = 0; i < numMirrors; i++) {
-    if (servoPattern == 1) {
+    if (servoPattern == 0) {
         
-        int pitch, yaw, pitch2, yaw2;
-        
-        yaw = 180;
-        pitch = 45;
-        pitch2 = 45;
-        yaw2 = 0;
+        int yaw, pitch, pitch2, yaw2;
+        if (resetServoToZero) {
+            pitch = 15;
+            yaw = 0;
+            pitch2 = 15;
+            yaw2 = 0;
+        } else {
+            pitch = 90;
+            yaw = 180;
+            pitch2 = 90;
+            yaw2 = 180;
+            
+        }
         
         for (int i = 0; i < numMirrors; i++) {
             
             int mirrorNum = mirrors[i].mirrorNum;
             
-            if (mirrorNum < 8) {
+            if (mirrorNum == specificMirror) {
                 mirrors[i].yawPosition = yaw;
                 mirrors[i].pitchPosition = pitch;
-            } else {
-                mirrors[i].yawPosition = yaw2;
-                mirrors[i].pitchPosition = pitch2;
             }
             
-            cout << "Mirror " << i << ":" << yaw << "," << pitch << "," << endl;
+            cout << "Debugging 0, Mirror " << i << ":" << yaw << "," << pitch << "," << yaw2 << "," << pitch2 << endl;
             
         }
         
-    } else if (servoPattern == 0) {
+    } else if (servoPattern == 1) {
         
         int pitch = sin(ofGetElapsedTimef()/2) * 90;
         pitch = ofMap(pitch, -90, 90, 30, 60);
@@ -181,17 +185,17 @@ void ofApp::update()
         int yaw = cos(ofGetElapsedTimef()/2) * 180;
         yaw = ofMap(yaw, -180, 180, 120, 180);
         
-        int pitch2 = sin(ofGetElapsedTimef()/4) * 90;
+        int pitch2 = sin(ofGetElapsedTimef()/2) * 90;
         pitch2 = ofMap(pitch2, -90, 90, 60, 30);
         
-        int yaw2 = cos(ofGetElapsedTimef()/4) * 180;
-        yaw2 = ofMap(yaw2, -180, 180, 120, 180);
+        int yaw2 = cos(ofGetElapsedTimef()/2) * 180;
+        yaw2 = ofMap(yaw2, -180, 180, 60, 30);
         
         /*int pitch = 45;  //45   30 - 60
-        int pitch2 = 45; //45   30 - 60
-        
-        int yaw = 180;   //150  120 - 180
-        int yaw2 = 0;   //30    0 - 60*/
+         int pitch2 = 45; //45   30 - 60
+         
+         int yaw = 180;   //150  120 - 180
+         int yaw2 = 0;   //30    0 - 60*/
         
         
         // Debugging!!!
@@ -214,11 +218,36 @@ void ofApp::update()
                 mirrors[i].pitchPosition = pitch2;
             }
             
-            cout << "Mirror " << i << ":" << yaw << "," << pitch << "," << endl;
+            cout << "Pattern 0, Mirror " << i << ":" << yaw << "," << pitch << "," << yaw2 << "," << pitch2 << endl;
             
         }
         
         
+        //for (int i = 0; i < numMirrors; i++) {
+    } else if (servoPattern == 22) {
+        
+        int pitch, yaw, pitch2, yaw2;
+        
+        yaw = 180;
+        pitch = 45;
+        pitch2 = 45;
+        yaw2 = 0;
+        
+        for (int i = 0; i < numMirrors; i++) {
+            
+            int mirrorNum = mirrors[i].mirrorNum;
+            
+            if (mirrorNum < 8) {
+                mirrors[i].yawPosition = yaw;
+                mirrors[i].pitchPosition = pitch;
+            } else {
+                mirrors[i].yawPosition = yaw2;
+                mirrors[i].pitchPosition = pitch2;
+            }
+            
+            //cout << "Mirror " << i << ":" << yaw << "," << pitch << "," << endl;
+            
+        }
         
         
     } else if (servoPattern == 2) {
@@ -294,7 +323,7 @@ void ofApp::update()
         pitch = ofMap(pitch, -90, 90, 15, 75);
         
         /*int yaw = cos(ofGetElapsedTimef()/2) * 180;
-        yaw = ofMap(yaw, -180, 180, 0, 180);*/
+         yaw = ofMap(yaw, -180, 180, 0, 180);*/
         
         int yaw = 135;
         
@@ -302,8 +331,8 @@ void ofApp::update()
         pitch2 = ofMap(pitch2, -90, 90, 15, 75);
         
         /*int yaw2 = cos(ofGetElapsedTimef()/2) * 180;
-        yaw2 = ofMap(yaw2, -180, 180, 180, 0);*/
-         
+         yaw2 = ofMap(yaw2, -180, 180, 180, 0);*/
+        
         int yaw2 = 45;
         
         
@@ -336,7 +365,7 @@ void ofApp::update()
         pitch = ofMap(pitch, -90, 90, 15, 75);
         
         int yaw = cos(ofGetElapsedTimef()/4) * 180;
-         yaw = ofMap(yaw, -180, 180, 125, 145);
+        yaw = ofMap(yaw, -180, 180, 0, 180);
         
         //int yaw = 135;
         
@@ -344,7 +373,7 @@ void ofApp::update()
         pitch2 = ofMap(pitch2, -90, 90, 15, 75);
         
         int yaw2 = cos(ofGetElapsedTimef()/4) * 180;
-         yaw2 = ofMap(yaw2, -180, 180, 145, 125);
+        yaw2 = ofMap(yaw2, -180, 180, 180, 0);
         
         //int yaw2 = 45;
         
@@ -375,10 +404,10 @@ void ofApp::update()
     } else if (servoPattern == 6) {
         
         /*int pitch3 = sin(ofGetElapsedTimef()*4) * 90;
-        pitch3 = ofMap(pitch3, -90, 90, 0, 90);
-        
-        int yaw3 = cos(ofGetElapsedTimef()*4) * 180;
-        yaw3 = ofMap(yaw3, -180, 180, 0, 180);*/
+         pitch3 = ofMap(pitch3, -90, 90, 0, 90);
+         
+         int yaw3 = cos(ofGetElapsedTimef()*4) * 180;
+         yaw3 = ofMap(yaw3, -180, 180, 0, 180);*/
         
         
         int pitch3 = ofRandom(90);
@@ -387,10 +416,10 @@ void ofApp::update()
         //int yaw = 135;
         
         /*int pitch2 = sin(ofGetElapsedTimef()/4) * 90;
-        pitch2 = ofMap(pitch2, -90, 90, 15, 75);
-        
-        int yaw2 = cos(ofGetElapsedTimef()/4) * 180;
-        yaw2 = ofMap(yaw2, -180, 180, 145, 125);*/
+         pitch2 = ofMap(pitch2, -90, 90, 15, 75);
+         
+         int yaw2 = cos(ofGetElapsedTimef()/4) * 180;
+         yaw2 = ofMap(yaw2, -180, 180, 145, 125);*/
         
         //int yaw2 = 45;
         
@@ -478,7 +507,7 @@ void ofApp::update()
     
     string bufferStr;
     
-    cout << "Num Mirrors " << numMirrors << endl;
+    //cout << "Num Mirrors " << numMirrors << endl;
     
     for (int i = 0; i < numMirrors; i++) {
         
@@ -494,12 +523,12 @@ void ofApp::update()
     ofx::IO::ByteBuffer buffer(bufferStr);
     
     /*ofx::IO::ByteBuffer buffer("0:" + ofToString(yaw) + "&1:" + ofToString(pitch) + "&2:" + ofToString(yaw2) + "&3:" + ofToString(pitch2) + "&4:" + ofToString(yaw) + "&5:" + ofToString(pitch) + "&6:" + ofToString(yaw2) + "&7:" + ofToString(pitch2) + "&8:" + ofToString(yaw) + "&9:" + ofToString(pitch) + "&10:" + ofToString(yaw2) + "&11:" + ofToString(pitch2) + "&12:" + ofToString(yaw) + "&13:" + ofToString(pitch) + "&14:" + ofToString(yaw2) + "&15:" + ofToString(pitch2) + "&16:" + ofToString(yaw) + "&17:" + ofToString(pitch) + "&18:" + ofToString(yaw2) + "&19:" + ofToString(pitch2) + "&20:" + ofToString(yaw) + "&21:" + ofToString(pitch) + "&22:" + ofToString(yaw2) + "&23:" + ofToString(pitch2) + "&24:" + ofToString(yaw) + "&25:" + ofToString(pitch) + "&26:" + ofToString(yaw2) + "&27:" + ofToString(pitch2) + "&28:" + ofToString(yaw) + "&29:" + ofToString(pitch) + "&30:" + ofToString(yaw2) + "&31:" + ofToString(pitch2));*/
-
+    
     // Send the byte buffer.
     // ofx::IO::PacketSerialDevice will encode the buffer, send it to the
     // receiver, and send a packet marker.
     
-    cout << buffer << endl;
+    cout << "Sending " << buffer << endl;
     device.send(buffer);
     
     
@@ -515,10 +544,10 @@ void ofApp::update()
 void ofApp::draw()
 {
     
-
+    
     ofBackground(0);
     ofSetColor(255);
-
+    
     int width = ofGetWidth();
     int height = ofGetHeight();
     
@@ -527,15 +556,15 @@ void ofApp::draw()
     ofBackground(0);
     
     if (lightPattern == 0) {
-    
+        
         for (int i = 0; i < numMirrors; i++) {
             
             int rate = ofMap(mirrors[i].yawPosition, 0, 180, 0, 255);
             /*if (i % 2 == 0) {
-                rate = ofMap(rate, 0, 180, 0, 255);
-            } else {
-                rate = ofMap(rate, 0, 90, 0, 255);
-            }*/
+             rate = ofMap(rate, 0, 180, 0, 255);
+             } else {
+             rate = ofMap(rate, 0, 90, 0, 255);
+             }*/
             
             ofSetColor(255, 255, 255, rate);
             //ofDrawRectangle(
@@ -600,9 +629,9 @@ void ofApp::draw()
             //cout << mirrors[i].mirrorNum << ":" << i << ":" << x << "," << y << "yp:" << mirrors[i].yawPosition << endl;
             
             /*ofSetCircleResolution(100);
-            ofNoFill();
-            ofSetLineWidth(10);
-            ofDrawCircle(x + w/2, y + h/2, radius);*/
+             ofNoFill();
+             ofSetLineWidth(10);
+             ofDrawCircle(x + w/2, y + h/2, radius);*/
             
             circleStroke(x + w/2, y + h/2, radius, 10);
             
@@ -620,7 +649,7 @@ void ofApp::draw()
         //y = h / 2;
         
         for (int i = 0; i < 8; i++) {
-        
+            
             int radius = ofMap(sin(ofGetElapsedTimef() * 3 + i), -1, 1, 0.1, w/1.5);
             
             int x = ofMap(sin(ofGetElapsedTimef() / 3 + i), -1, 1, 0, width);
@@ -749,20 +778,20 @@ void ofApp::draw()
     }
     
     /*for (int i = 0; i < gridSize; i++) {
-        
-        for (int j = 0; j < gridSize; j++) {
-            
-            float rate = ofGetElapsedTimef() / (((i * j / 2)) + 1) * 2;
-            cout << rate << endl;
-            
-            ofSetColor(255, 255, 255, ofMap(sin(rate), -1, 1, 0, 255));
-            
-            //float rate =
-            
-            ofDrawRectangle(i * (width / gridSize), j * (height / gridSize), width / gridSize, height / gridSize);
-            
-        }
-    }*/
+     
+     for (int j = 0; j < gridSize; j++) {
+     
+     float rate = ofGetElapsedTimef() / (((i * j / 2)) + 1) * 2;
+     cout << rate << endl;
+     
+     ofSetColor(255, 255, 255, ofMap(sin(rate), -1, 1, 0, 255));
+     
+     //float rate =
+     
+     ofDrawRectangle(i * (width / gridSize), j * (height / gridSize), width / gridSize, height / gridSize);
+     
+     }
+     }*/
     
     fbo.end();
     
@@ -779,7 +808,7 @@ void ofApp::draw()
     ofMultMatrix(mat);
     fbo.draw(0, 0);
     ofPopMatrix();
-
+    
     //======================== use the matrix to transform points.
     
     ofSetLineWidth(2);
@@ -829,22 +858,23 @@ void ofApp::draw()
     }
     
     
-
+    
     if (showDebug) {
         std::stringstream ss;
-
+        
         ss << "         FPS: " << ofGetFrameRate() << std::endl;
-        ss << "Connected to: " << device.getPortName();
-
+        ss << "Connected to: " << device.getPortName() << std::endl;
+        ss << "Servo Pattern:" << servoPattern << std::endl;
+        
         ofDrawBitmapString(ss.str(), ofVec2f(20, 120));
         
         int x = 20;
-        int y = 150;
+        int y = 170;
         int height = 20;
-
-
+        
+        
         auto iter = serialMessages.begin();
-
+        
         while (iter != serialMessages.end())
         {
             iter->fade -= 20;
@@ -857,16 +887,16 @@ void ofApp::draw()
             {
                 ofSetColor(255, ofClamp(iter->fade, 0, 255));
                 ofDrawBitmapString(iter->message, ofVec2f(x, y));
-
+                
                 y += height;
-
+                
                 if (!iter->exception.empty())
                 {
                     ofSetColor(255, 0, 0, ofClamp(iter->fade, 0, 255));
                     ofDrawBitmapString(iter->exception, ofVec2f(x + height, y));
                     y += height;
                 }
-
+                
                 ++iter;
             }
         }
@@ -939,6 +969,6 @@ void ofApp::onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args)
     SerialMessage message(args.getBuffer().toString(),
                           args.getException().displayText(),
                           500);
-
+    
     serialMessages.push_back(message);
 }

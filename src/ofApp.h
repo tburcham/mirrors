@@ -70,6 +70,7 @@ public:
     ofxIntSlider lightPattern;
     ofxIntSlider servoPattern;
     ofxIntSlider pace;
+    ofxIntSlider specificMirror;
     ofxToggle useSchedule;
     
     int numMirrors = 16;
