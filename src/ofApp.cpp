@@ -69,14 +69,25 @@ void ofApp::setup()
     panel.setup("", "settings.xml", 100, 500);
     panel.add(useSchedule.setup("Use Schedule?", false));
     panel.add(gridSize.setup("Grid Size", 4, 1, 16));
-    panel.add(lightPattern.setup("Light Pattern", 0, 0, 7));
+    panel.add(lightPattern.setup("Light Pattern", 0, 0, 8));
     panel.add(servoPattern.setup("Servo Pattern", 0, 0, 7));
     panel.add(pace.setup("Pace", 10, 10, 180));
     panel.add(specificMirror.setup("Specific Mirror", 0, 0, 15));
+    
+    panel.add(pitchInput.setup("Pitch", 0, 0, 90));
+    panel.add(yawInput.setup("Yaw", 0, 0, 180));
+    panel.add(pitch2Input.setup("Pitch 2", 0, 0, 90));
+    panel.add(yaw2Input.setup("Yaw 2", 0, 0, 180));
+    
     panel.loadFromFile("settings.xml");
     
     lightPattern = 0;
     servoPattern = 0;
+    
+    grabber.setup(1280,720);
+    
+    // Setup tracker
+    tracker.setup();
 }
 
 void ofApp::exit()
@@ -109,14 +120,12 @@ void ofApp::update()
         
     }
     
-    // Create a byte buffer.
-    //ofx::IO::ByteBuffer buffer("Frame Number: " + ofToString(ofGetFrameNum()));
+    grabber.update();
     
-    
-    
-    //ofx::IO::ByteBuffer buffer("0;" + ofToString(pitch) + ":" + ofToString(pitch));
-    //ofx::IO::ByteBuffer buffer("0:" + ofToString(yaw) + "&1:" + ofToString(pitch));
-    
+    // Update tracker when there are new frames
+    if(grabber.isFrameNew()){
+        tracker.update(grabber);
+    }
     
     
     //for (int i = 0; i < mirrors.size(); i++) {
@@ -775,6 +784,87 @@ void ofApp::draw()
             
         }
         
+    } else if (lightPattern == 8) {
+        
+        if (tracker.size() > 0){
+            ofPolyline left = tracker.getInstances()[0].getLandmarks().getImageFeature(ofxFaceTracker2Landmarks::LEFT_EYE);
+            ofPolyline right = tracker.getInstances()[0].getLandmarks().getImageFeature(ofxFaceTracker2Landmarks::RIGHT_EYE);
+            
+            ofPoint midLeft;
+            ofPoint midRight;
+            for (int i = 0; i < left.size(); i++){
+                midLeft += left[i];
+            }
+            
+            for (int i = 0; i < right.size(); i++){
+                midRight += right[i];
+            }
+            midLeft /= (float)left.size();
+            midRight /= (float)right.size();
+            ofCircle(midLeft, 3);
+            ofCircle(midRight, 3);
+            ofLine(midLeft, midRight);
+            ofPoint diff = midRight- midLeft;
+            float dist = diff.length();
+            float scale = 200.0 / MAX(dist, 0.001);
+            float angle = atan2(diff.y, diff.x);
+            
+            
+            
+            ofPushMatrix();
+            
+            ofTranslate(200, 200);
+            
+            grabber.draw(0, 0);
+            left.draw();
+            right.draw();
+            
+            // Draw tracker landmarks
+            tracker.drawDebug();
+            
+            // Draw estimated 3d pose
+            tracker.drawDebugPose();
+            
+            ofPopMatrix();
+            
+            
+            
+            
+            
+            pitchInput = (int)ofMap(midLeft.y, 0.0, grabber.getHeight(), 45, 90);
+            yawInput = (int)ofMap(midRight.x, 0.0, grabber.getWidth(), 180, 0);;
+            
+            
+            //send to mirrors
+            int pitch = pitchInput;
+            int yaw = yawInput;
+            int pitch2 = pitch2Input;
+            int yaw2 = yaw2Input;
+            
+            
+            // Debugging!!!
+            if (resetServoToZero) {
+                yaw = 90;
+                pitch = 0;
+                pitch2 = 0;
+                yaw2 = 90;
+            }
+            
+            for (int i = 0; i < numMirrors; i++) {
+                
+                int mirrorNum = mirrors[i].mirrorNum;
+                
+                //if (mirrorNum < 8) {
+                mirrors[i].yawPosition = yaw;
+                mirrors[i].pitchPosition = pitch;
+                //} else {
+                //    mirrors[i].yawPosition = yaw2;
+                //    mirrors[i].pitchPosition = pitch2;
+                //}
+                
+            }
+            
+        }
     }
     
     /*for (int i = 0; i < gridSize; i++) {

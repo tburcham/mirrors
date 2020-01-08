@@ -16,6 +16,8 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>1.0</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Eye Tracking</string>
 	<key>CFBundleIconFile</key>
 	<string>${ICON}</string>
 </dict>

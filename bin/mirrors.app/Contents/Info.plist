@@ -38,5 +38,7 @@
 	<string>1020</string>
 	<key>DTXcodeBuild</key>
 	<string>10E1001</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Eye Tracking</string>
 </dict>
 </plist>

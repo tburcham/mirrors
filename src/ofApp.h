@@ -6,6 +6,7 @@
 #include "ofxQuadWarp.h"
 #include "ofxGui.h"
 #include "mirror.h"
+#include "ofxFaceTracker2.h"
 
 
 class SerialMessage
@@ -73,6 +74,11 @@ public:
     ofxIntSlider specificMirror;
     ofxToggle useSchedule;
     
+    ofxIntSlider pitchInput;
+    ofxIntSlider yawInput;
+    ofxIntSlider pitch2Input;
+    ofxIntSlider yaw2Input;
+    
     int numMirrors = 16;
     //int gridSize = 4;
     
@@ -85,5 +91,8 @@ public:
     
     //int lightPattern = 0;
     //int servoPattern = 0;
+    
+    ofVideoGrabber grabber;
+    ofxFaceTracker2 tracker;
 
 };
