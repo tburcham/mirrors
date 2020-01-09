@@ -73,6 +73,9 @@ public:
     ofxIntSlider specificMirror;
     ofxToggle useSchedule;
     
+    ofxFloatSlider videoContrast;
+    ofxFloatSlider videoBrightness;
+    
     int numMirrors = 16;
     //int gridSize = 4;
     
@@ -85,5 +88,7 @@ public:
     
     //int lightPattern = 0;
     //int servoPattern = 0;
+    
+    ofVideoPlayer player;
 
 };

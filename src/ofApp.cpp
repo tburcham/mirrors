@@ -69,14 +69,24 @@ void ofApp::setup()
     panel.setup("", "settings.xml", 100, 500);
     panel.add(useSchedule.setup("Use Schedule?", false));
     panel.add(gridSize.setup("Grid Size", 4, 1, 16));
-    panel.add(lightPattern.setup("Light Pattern", 0, 0, 7));
+    panel.add(lightPattern.setup("Light Pattern", 8, 0, 8));
     panel.add(servoPattern.setup("Servo Pattern", 0, 0, 7));
     panel.add(pace.setup("Pace", 10, 10, 180));
     panel.add(specificMirror.setup("Specific Mirror", 0, 0, 15));
+    
+    panel.add(videoBrightness.setup("Video Brightness", 0.5, 0.0, 1.0));
+    panel.add(videoContrast.setup("Video Contrast", 0.5, 0.0, 1.0));
     panel.loadFromFile("settings.xml");
     
     lightPattern = 0;
     servoPattern = 0;
+    
+    player.load("geese3.mp4");
+    player.setVolume(0);
+    player.setLoopState(OF_LOOP_PALINDROME);
+    //player.setSpeed(0.3);
+    //player.stop();
+    //player.play();
 }
 
 void ofApp::exit()
@@ -538,6 +548,18 @@ void ofApp::update()
         points[i].x = ofRandom(fbo.getWidth());
         points[i].y = ofRandom(fbo.getHeight());
     }
+    
+    
+    if (lightPattern == 8) {
+        if (player.isPaused()) {
+            player.play();
+        }
+        //if (player.isFrameNew()) {
+            player.update();
+        //}
+    } else {
+        player.stop();
+    }
 }
 
 
@@ -775,6 +797,32 @@ void ofApp::draw()
             
         }
         
+    } else if (lightPattern == 8) {
+        
+        ofPixels p;
+        //p.allocate(player.getWidth(), player.getHeight(), OF_IMAGE_GRAYSCALE);
+        p = player.getPixels();
+        
+        ofxCvColorImage i;
+        i.setFromPixels(p);
+        //i.resize(i.getWidth() * 5, i.getHeight() * 5);
+        
+        ofxCvGrayscaleImage grayImage;
+        grayImage = i;
+        grayImage.invert();
+        
+        grayImage.resize(grayImage.getWidth() * 7, grayImage.getHeight() * 7);
+        
+        //grayImage.brightnessContrast(videoBrightness, videoContrast);
+        grayImage.brightnessContrast(0.0, 1.0);
+        
+        //grayImage.draw(-grayImage.getWidth() / 2,-(grayImage.getHeight()/5));
+        //grayImage.draw((-grayImage.getWidth() / 2) + 800, -2800);
+        grayImage.draw(-5140, -2800);
+        //grayImage.draw(0,0);
+        
+        //cout << "height:" << grayImage.getHeight() << endl;
+        //cout << "mouseY:" << ofGetMouseX() << endl;
     }
     
     /*for (int i = 0; i < gridSize; i++) {

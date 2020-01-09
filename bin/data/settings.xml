@@ -1,6 +1,11 @@
 <group>
 	<Grid_Size>4</Grid_Size>
-	<Light_Pattern>5</Light_Pattern>
+	<Light_Pattern>8</Light_Pattern>
 	<Servo_Pattern>0</Servo_Pattern>
 <group/>
+<Use_Schedule?>0</Use_Schedule?>
+	<Pace>10</Pace>
+	<Specific_Mirror>0</Specific_Mirror>
+	<Video_Brightness>0</Video_Brightness>
+	<Video_Contrast>1</Video_Contrast>
 </group>
