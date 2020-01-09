@@ -69,7 +69,7 @@ void ofApp::setup()
     panel.setup("", "settings.xml", 100, 500);
     panel.add(useSchedule.setup("Use Schedule?", false));
     panel.add(gridSize.setup("Grid Size", 4, 1, 16));
-    panel.add(lightPattern.setup("Light Pattern", 8, 0, 8));
+    panel.add(lightPattern.setup("Light Pattern", 0, 0, 9));
     panel.add(servoPattern.setup("Servo Pattern", 0, 0, 7));
     panel.add(pace.setup("Pace", 10, 10, 180));
     panel.add(specificMirror.setup("Specific Mirror", 0, 0, 15));
@@ -87,6 +87,8 @@ void ofApp::setup()
     //player.setSpeed(0.3);
     //player.stop();
     //player.play();
+    
+    font.load("Apercu.ttf", 100, true, true, true);
 }
 
 void ofApp::exit()
@@ -157,7 +159,7 @@ void ofApp::update()
     //}
     
     
-    
+    // Calibration
     if (servoPattern == 0) {
         
         int yaw, pitch, pitch2, yaw2;
@@ -183,10 +185,11 @@ void ofApp::update()
                 mirrors[i].pitchPosition = pitch;
             }
             
-            cout << "Debugging 0, Mirror " << i << ":" << yaw << "," << pitch << "," << yaw2 << "," << pitch2 << endl;
+            //cout << "Debugging 0, Mirror " << i << ":" << yaw << "," << pitch << "," << yaw2 << "," << pitch2 << endl;
             
         }
         
+    // Slow & Halfway
     } else if (servoPattern == 1) {
         
         int pitch = sin(ofGetElapsedTimef()/2) * 90;
@@ -234,6 +237,8 @@ void ofApp::update()
         
         
         //for (int i = 0; i < numMirrors; i++) {
+        
+    // Stay in place
     } else if (servoPattern == 22) {
         
         int pitch, yaw, pitch2, yaw2;
@@ -259,7 +264,7 @@ void ofApp::update()
             
         }
         
-        
+    // Slower & Halfway
     } else if (servoPattern == 2) {
         
         int pitch = sin(ofGetElapsedTimef()/8) * 90;
@@ -288,7 +293,8 @@ void ofApp::update()
             
         }
         
-        
+    
+    // Fast & Halfway
     } else if (servoPattern == 3) {
         
         int pitch = sin(ofGetElapsedTimef()/2) * 90;
@@ -326,7 +332,7 @@ void ofApp::update()
             
         }
         
-        
+    // Up & Down 2 45
     } else if (servoPattern == 4) {
         
         int pitch = sin(ofGetElapsedTimef()) * 90;
@@ -368,7 +374,7 @@ void ofApp::update()
             
         }
         
-        
+    // Twitchy & Tight
     } else if (servoPattern == 5) {
         
         int pitch = sin(ofGetElapsedTimef()/4) * 90;
@@ -410,7 +416,7 @@ void ofApp::update()
             
         }
         
-        
+    // Solo Fast
     } else if (servoPattern == 6) {
         
         /*int pitch3 = sin(ofGetElapsedTimef()*4) * 90;
@@ -466,7 +472,7 @@ void ofApp::update()
             
         }
         
-        
+    // 180, Sync'd & smooth
     } else if (servoPattern == 7) {
         
         int pitch = sin(ofGetElapsedTimef()/4) * 90;
@@ -577,6 +583,7 @@ void ofApp::draw()
     
     ofBackground(0);
     
+    // Follow the mirrors
     if (lightPattern == 0) {
         
         for (int i = 0; i < numMirrors; i++) {
@@ -632,7 +639,7 @@ void ofApp::draw()
             
         }
         
-    } else if (lightPattern == 2) {
+    } else if (lightPattern == 22) {
         
         for (int i = 0; i < numMirrors; i++) {
             
@@ -659,9 +666,59 @@ void ofApp::draw()
             
         }
         
+    // Text
+    } else if (lightPattern == 2) {
+        
+        
+        
+        
+        int w, h;
+        w = width;
+        h = height;
+        
+        string text = "who said gas will get me the miles";
+        vector<string> textTokens = ofSplitString(text, " ");
+        
+        
+        float time = ofGetElapsedTimef();
+        //cout << "time:" << time << " pace:" << pace << endl;
+        
+        float textPace = 2.0;
+        
+        float p = textPace * (textTokens.size() + 1);
+        float timemod = fmodf(time, p);
+        float textPos = floor(timemod / textPace);
+        
+        float diff = (timemod / textPace) - textPos;
+        
+        cout << "textPos:" << textPos << " textTokens.size():" << textTokens.size() << endl;
+        cout << "diff:" << diff << endl;
+        
+        if (textPos < textTokens.size()) {
+        
+            if (diff < 0.5) {
+                ofSetColor(255, 255, 255, ofMap(diff, 0, 0.5, 0, 255));
+            } else {
+                ofSetColor(255, 255, 255, ofMap(diff, 0.5, 1, 255, 0));
+            }
+            
+            font.drawStringAsShapes(textTokens[textPos], width / 2, height / 2);
+            
+        }
+        
+        
+        /*for (int i = 0; i < textTokens.size(); i++) {
+            
+            font.drawStringAsShapes(textTokens[i], ofRandom(w), ofRandom(h));
+            
+        }*/
+        
+        
+        
+    // Fast circles
     } else if (lightPattern == 3) {
         
-        ofSetColor(255, 255, 255);
+        ofSetColor(255, 255, 255, 200);
         
         int w, h;
         
@@ -672,7 +729,7 @@ void ofApp::draw()
         
         for (int i = 0; i < 8; i++) {
             
-            int radius = ofMap(sin(ofGetElapsedTimef() * 3 + i), -1, 1, 0.1, w/1.5);
+            int radius = ofMap(sin(ofGetElapsedTimef() / 3 + i), -1, 1, 0.1, w/1.5);
             
             int x = ofMap(sin(ofGetElapsedTimef() / 3 + i), -1, 1, 0, width);
             int y = ofMap(cos(ofGetElapsedTimef() / 3 + i), -1, 1, 0, height);
@@ -710,8 +767,23 @@ void ofApp::draw()
             
             
         }
-        
+    
     } else if (lightPattern == 5) {
+        
+        int R_rate = ofMap(sin(ofGetElapsedTimef() / 3), -1, 1, 0, 255);
+        int G_rate = ofMap(sin(ofGetElapsedTimef() / 4), -1, 1, 0, 255);
+        int B_rate = ofMap(sin(ofGetElapsedTimef() / 5), -1, 1, 0, 255);
+        
+        ofSetColor(255, 0, 0, R_rate);
+        ofDrawRectangle(0, 0, width / 3, height);
+        
+        ofSetColor(0, 255, 0, G_rate);
+        ofDrawRectangle(width / 3, 0, width / 3, height);
+        
+        ofSetColor(0, 0, 255, B_rate);
+        ofDrawRectangle(2 * (width / 3), 0, width / 3, height);
+        
+    } else if (lightPattern == 55) {
         
         for (int i = 0; i < numMirrors; i++) {
             
@@ -741,8 +813,65 @@ void ofApp::draw()
             
             
         }
-        
     } else if (lightPattern == 6) {
+        
+        
+        
+        for (int i = 0; i < numMirrors; i++) {
+        
+            int x, y, w, h;
+            
+            w = width / gridSize;
+            h = height / gridSize;
+            x = mirrors[i].x * w;
+            y = mirrors[i].y * h;
+            
+            
+            int R_rate = ofMap(sin((ofGetElapsedTimef() + i) / 3), -1, 1, 0, 255);
+            int G_rate = ofMap(sin((ofGetElapsedTimef() + i) / 4), -1, 1, 0, 255);
+            int B_rate = ofMap(sin((ofGetElapsedTimef() + i) / 5), -1, 1, 0, 255);
+            
+            ofSetColor(255, 0, 0, R_rate);
+            ofDrawRectangle(x, y, w / 3, h);
+            
+            ofSetColor(0, 255, 0, G_rate);
+            ofDrawRectangle(x + w / 3, y, w / 3, h);
+            
+            ofSetColor(0, 0, 255, B_rate);
+            ofDrawRectangle(x + (2 * (w / 3)), y, w / 3, h);
+            
+        }
+    } else if (lightPattern == 9) {
+        
+        int units = ofMap(sin(ofGetElapsedTimef() / 10), -1, 1, 1, 50);
+        
+        for (int i = 0; i < units; i++) {
+            
+            for (int j = 0; j < units; j++) {
+                int x, y, w, h;
+                
+                w = width / units;
+                h = height / units;
+                x = i * w;
+                y = j * h;
+                
+                
+                int R_rate = ofMap(sin((ofGetElapsedTimef() + i + j)), -1, 1, 0, 255);
+                int G_rate = ofMap(sin((ofGetElapsedTimef() + i + j) / 2), -1, 1, 0, 255);
+                int B_rate = ofMap(sin((ofGetElapsedTimef() + i + j) / 1.5), -1, 1, 0, 255);
+                
+                ofSetColor(255, 0, 0, R_rate);
+                ofDrawRectangle(x, y, w / 3, h);
+                
+                ofSetColor(0, 255, 0, G_rate);
+                ofDrawRectangle(x + w / 3, y, w / 3, h);
+                
+                ofSetColor(0, 0, 255, B_rate);
+                ofDrawRectangle(x + (2 * (w / 3)), y, w / 3, h);
+            }
+        }
+        
+    } else if (lightPattern == 66) {
         
         for (int i = 0; i < numMirrors; i++) {
             

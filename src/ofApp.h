@@ -90,5 +90,7 @@ public:
     //int servoPattern = 0;
     
     ofVideoPlayer player;
+    
+    ofTrueTypeFont font;
 
 };
