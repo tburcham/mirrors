@@ -92,5 +92,10 @@ public:
     ofVideoPlayer player;
     
     ofTrueTypeFont font;
+    int currTextPos;
+    ofVec2f currTextCoords;
+    ofFbo textFbo;
+    
+    string scheduleDebug;
 
 };

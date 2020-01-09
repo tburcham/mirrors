@@ -55,6 +55,7 @@ void ofApp::setup()
     int h = fbo.getHeight();
     
     fbo.allocate(w, h);
+    textFbo.allocate(w, h);
     
     warper.setSourceRect(ofRectangle(0, 0, w, h));              // this is the source rectangle which is the size of the image and located at ( 0, 0 )
     warper.setTopLeftCornerPosition(ofPoint(x, y));             // this is position of the quad warp corners, centering the image on the screen.
@@ -88,7 +89,7 @@ void ofApp::setup()
     //player.stop();
     //player.play();
     
-    font.load("Apercu.ttf", 100, true, true, true);
+    font.load("Apercu.ttf", 200, true, true, true);
 }
 
 void ofApp::exit()
@@ -111,6 +112,25 @@ void ofApp::update()
         float timemod = fmodf(time, p);
         float pattern = floor(timemod / pace);
         lightPattern = pattern;
+        
+        float diff = (timemod / pace) - pattern;
+        
+        //cout << "Schedule: p:" << p << ", timemod:" << timemod << ", pattern:" << pattern << endl;
+        if (showDebug) {
+            std::stringstream ss;
+            ss << "Schedule: p:" << p;
+            ss << ", timemod: " << timemod;
+            ss << ", pattern: " << pattern;
+            
+            ss << ", diff:" << diff;
+            ss << std::endl;
+            
+            scheduleDebug = ss.str();
+            //ofSetColor(255, 255, 255);
+            //ofDrawBitmapString(ss.str(), 20, 200);
+            
+            //cout << ss.str() << endl;
+        }
         
         //
         
@@ -676,7 +696,8 @@ void ofApp::draw()
         w = width;
         h = height;
         
-        string text = "who said gas will get me the miles";
+        //string text = "who said gas will get me the miles";
+        string text = "Are image and video inputs processed by it stored, and how are they used by them? It may store and use image and video inputs processed by the service solely to provide and maintain the service and, unless you opt out as provided below, to improve and develop the quality of it and other  technologies. Use of your content is important for continuous improvement of its customer experience, including the development and training of related technologies. We do not use any personally identifiable information that may be contained in your content to target products, services or marketing to you or your end users. Your trust, privacy, and the security of your content are our highest priority and we implement appropriate and sophisticated technical and physical controls, including encryption at rest and in transit, designed to prevent unauthorized access to, or disclosure of, your content and ensure that our use complies with our commitments to you. Please see faq for more information. You may opt out of having your image and video inputs used to improve or develop the quality of it and other technologies by contacting Support. Can I delete image and video inputs stored by it? Yes. You can request deletion of image and video inputs associated with your account by contacting Support. Deleting image and video inputs may degrade its experience. Who has access to my content that is processed and stored by it? Only authorized employees will have access to your content that is processed by it. Your trust, privacy, and the security of your content are our highest priority and we implement appropriate and sophisticated technical and physical controls, including encryption at rest and in transit, designed to prevent unauthorized access to, or disclosure of, your content and ensure that our use complies with our commitments to you. Please see faq for more information.";
         vector<string> textTokens = ofSplitString(text, " ");
         
         
@@ -702,7 +723,38 @@ void ofApp::draw()
                 ofSetColor(255, 255, 255, ofMap(diff, 0.5, 1, 255, 0));
             }
             
-            font.drawStringAsShapes(textTokens[textPos], width / 2, height / 2);
+            if (currTextPos != textPos) { // it just changed
+                currTextCoords.x = ofRandom(w/2);
+                currTextCoords.y = ofRandom(h);
+            }
+            
+            cout << textPos << "," << ofRandom(textPos);
+            
+            //int x = ofRandom(textPos) * (w/2);
+            //int y = ofRandom(textPos*2) * h;
+            
+            /*textFbo.clear();
+            textFbo.begin();
+            
+                ofSetBackgroundColor(0,0,0);*/
+                font.drawStringAsShapes(textTokens[textPos], currTextCoords.x, currTextCoords.y);
+            
+            /*textFbo.end();
+            
+            textFbo.draw(0, 0, w, h);
+            
+            //fbo.draw(w, h, -w, h);
+            ofTexture flipped = textFbo.getTexture();*/
+            
+            
+            
+            
+            //float pos = ofGetWidth()/2.;
+            //flipped.draw(w, 0, -w, h);
+            //flipped.draw(0,0);
+            //fbo.draw();
+            
+            currTextPos = textPos;
             
         }
         
@@ -1044,6 +1096,9 @@ void ofApp::draw()
         ss << "Servo Pattern:" << servoPattern << std::endl;
         
         ofDrawBitmapString(ss.str(), ofVec2f(20, 120));
+        
+        ofDrawBitmapString(scheduleDebug, 20, 160);
+        
         
         int x = 20;
         int y = 170;
